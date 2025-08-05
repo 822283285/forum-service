@@ -21,6 +21,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { Request } from 'express';
+import { ResponseDto, PaginationDto } from '../../common/dto/response.dto';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -41,11 +42,16 @@ export class UserController {
    */
   @Post()
   @ApiOperation({ summary: '创建用户', description: '用户注册接口' })
-  @ApiResponse({ status: 201, description: '用户创建成功', type: User })
+  @ApiResponse({
+    status: 201,
+    description: '用户创建成功',
+    type: ResponseDto<User>,
+  })
   @ApiResponse({ status: 409, description: '用户名或邮箱已存在' })
   async create(@Body() createUserDto: CreateUserDto, @Req() req: Request) {
     const registerIp = req.ip || req.socket.remoteAddress;
-    return await this.userService.create(createUserDto, registerIp);
+    const user = await this.userService.create(createUserDto, registerIp);
+    return ResponseDto.success(user, '用户创建成功');
   }
 
   /**
@@ -54,7 +60,7 @@ export class UserController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: '用户登录', description: '用户登录验证接口' })
-  @ApiResponse({ status: 200, description: '登录成功', type: User })
+  @ApiResponse({ status: 200, description: '登录成功', type: ResponseDto })
   @ApiResponse({ status: 401, description: '用户名或密码错误' })
   async login(@Body() loginDto: LoginDto, @Req() req: Request) {
     // 根据用户名类型查找用户
@@ -88,7 +94,8 @@ export class UserController {
     await this.userService.updateLastLogin(user.id, loginIp);
 
     // 重新查询用户以确保敏感字段被过滤
-    return await this.userService.findOne(user.id);
+    const userInfo = await this.userService.findOne(user.id);
+    return ResponseDto.success(userInfo, '登录成功');
   }
 
   /**
@@ -99,10 +106,21 @@ export class UserController {
     summary: '获取用户列表',
     description: '分页获取用户列表，支持状态筛选',
   })
-  @ApiResponse({ status: 200, description: '获取成功' })
+  @ApiResponse({
+    status: 200,
+    description: '获取成功',
+    type: ResponseDto<PaginationDto<User>>,
+  })
   async findAll(@Query() queryUserDto: QueryUserDto) {
     const { page = 1, limit = 10, status } = queryUserDto;
-    return await this.userService.findAll(page, limit, status);
+    const result = await this.userService.findAll(page, limit, status);
+    const paginationData = new PaginationDto(
+      result.users,
+      result.total,
+      page,
+      limit,
+    );
+    return ResponseDto.success(paginationData, '获取用户列表成功');
   }
 
   /**
@@ -110,10 +128,21 @@ export class UserController {
    */
   @Get('search')
   @ApiOperation({ summary: '搜索用户', description: '根据关键词搜索用户' })
-  @ApiResponse({ status: 200, description: '搜索成功' })
+  @ApiResponse({
+    status: 200,
+    description: '搜索成功',
+    type: ResponseDto<PaginationDto<User>>,
+  })
   async searchUsers(@Query() searchUserDto: SearchUserDto) {
     const { keyword, page = 1, limit = 10 } = searchUserDto;
-    return await this.userService.searchUsers(keyword, page, limit);
+    const result = await this.userService.searchUsers(keyword, page, limit);
+    const paginationData = new PaginationDto(
+      result.users,
+      result.total,
+      page,
+      limit,
+    );
+    return ResponseDto.success(paginationData, '搜索用户成功');
   }
 
   /**
@@ -127,10 +156,11 @@ export class UserController {
     description: '数量限制',
     example: 10,
   })
-  @ApiResponse({ status: 200, description: '获取成功', type: [User] })
+  @ApiResponse({ status: 200, description: '获取成功', type: ResponseDto })
   async getActiveUsers(@Query('limit') limit?: string) {
     const limitNum = limit ? parseInt(limit, 10) : 10;
-    return await this.userService.getActiveUsers(limitNum);
+    const users = await this.userService.getActiveUsers(limitNum);
+    return ResponseDto.success(users, '获取活跃用户成功');
   }
 
   /**
@@ -138,9 +168,10 @@ export class UserController {
    */
   @Get('stats')
   @ApiOperation({ summary: '获取用户统计', description: '获取用户统计信息' })
-  @ApiResponse({ status: 200, description: '获取成功' })
+  @ApiResponse({ status: 200, description: '获取成功', type: ResponseDto })
   async getUserStats() {
-    return await this.userService.getUserStats();
+    const stats = await this.userService.getUserStats();
+    return ResponseDto.success(stats, '获取用户统计成功');
   }
 
   /**
@@ -149,10 +180,11 @@ export class UserController {
   @Get(':id')
   @ApiOperation({ summary: '获取用户详情', description: '根据ID获取用户详情' })
   @ApiParam({ name: 'id', description: '用户ID', example: 1 })
-  @ApiResponse({ status: 200, description: '获取成功', type: User })
+  @ApiResponse({ status: 200, description: '获取成功', type: ResponseDto })
   @ApiResponse({ status: 404, description: '用户不存在' })
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return await this.userService.findOne(id);
+    const user = await this.userService.findOne(id);
+    return ResponseDto.success(user, '获取用户详情成功');
   }
 
   /**
@@ -161,13 +193,14 @@ export class UserController {
   @Patch(':id')
   @ApiOperation({ summary: '更新用户信息', description: '更新用户信息' })
   @ApiParam({ name: 'id', description: '用户ID', example: 1 })
-  @ApiResponse({ status: 200, description: '更新成功', type: User })
+  @ApiResponse({ status: 200, description: '更新成功', type: ResponseDto })
   @ApiResponse({ status: 404, description: '用户不存在' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return await this.userService.update(id, updateUserDto);
+    const user = await this.userService.update(id, updateUserDto);
+    return ResponseDto.success(user, '用户信息更新成功');
   }
 
   /**
@@ -176,13 +209,14 @@ export class UserController {
   @Patch(':id/status')
   @ApiOperation({ summary: '更新用户状态', description: '更新单个用户状态' })
   @ApiParam({ name: 'id', description: '用户ID', example: 1 })
-  @ApiResponse({ status: 200, description: '状态更新成功', type: User })
+  @ApiResponse({ status: 200, description: '状态更新成功', type: ResponseDto })
   @ApiResponse({ status: 404, description: '用户不存在' })
   async updateStatus(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: { status: 'active' | 'inactive' | 'banned' },
   ) {
-    return await this.userService.updateStatus(id, body.status);
+    const user = await this.userService.updateStatus(id, body.status);
+    return ResponseDto.success(user, '用户状态更新成功');
   }
 
   /**
@@ -193,11 +227,11 @@ export class UserController {
     summary: '批量更新用户状态',
     description: '批量更新多个用户状态',
   })
-  @ApiResponse({ status: 200, description: '批量更新成功' })
+  @ApiResponse({ status: 200, description: '批量更新成功', type: ResponseDto })
   async batchUpdateStatus(@Body() updateStatusDto: UpdateStatusDto) {
     const { ids, status } = updateStatusDto;
     await this.userService.batchUpdateStatus(ids, status);
-    return { message: '批量更新状态成功' };
+    return ResponseDto.success(null, '批量更新状态成功');
   }
 
   /**
@@ -206,7 +240,7 @@ export class UserController {
   @Patch(':id/points')
   @ApiOperation({ summary: '更新用户积分', description: '增加或扣除用户积分' })
   @ApiParam({ name: 'id', description: '用户ID', example: 1 })
-  @ApiResponse({ status: 200, description: '积分更新成功', type: User })
+  @ApiResponse({ status: 200, description: '积分更新成功', type: ResponseDto })
   @ApiResponse({ status: 404, description: '用户不存在' })
   async updatePoints(
     @Param('id', ParseIntPipe) id: number,
@@ -214,11 +248,13 @@ export class UserController {
   ) {
     const { points } = updatePointsDto;
 
+    let user;
     if (points > 0) {
-      return await this.userService.addPoints(id, points);
+      user = await this.userService.addPoints(id, points);
     } else {
-      return await this.userService.deductPoints(id, Math.abs(points));
+      user = await this.userService.deductPoints(id, Math.abs(points));
     }
+    return ResponseDto.success(user, '用户积分更新成功');
   }
 
   /**
@@ -227,11 +263,11 @@ export class UserController {
   @Delete(':id')
   @ApiOperation({ summary: '删除用户', description: '软删除用户' })
   @ApiParam({ name: 'id', description: '用户ID', example: 1 })
-  @ApiResponse({ status: 200, description: '删除成功' })
+  @ApiResponse({ status: 200, description: '删除成功', type: ResponseDto })
   @ApiResponse({ status: 404, description: '用户不存在' })
   async remove(@Param('id', ParseIntPipe) id: number) {
     await this.userService.remove(id);
-    return { message: '用户删除成功' };
+    return ResponseDto.success(null, '用户删除成功');
   }
 
   /**
@@ -240,10 +276,12 @@ export class UserController {
   @Get('check/username/:username')
   @ApiOperation({ summary: '检查用户名', description: '检查用户名是否已存在' })
   @ApiParam({ name: 'username', description: '用户名', example: 'testuser' })
-  @ApiResponse({ status: 200, description: '检查完成' })
+  @ApiResponse({ status: 200, description: '检查完成', type: ResponseDto })
   async checkUsername(@Param('username') username: string) {
     const exists = await this.userService.exists({ username });
-    return { exists, message: exists ? '用户名已存在' : '用户名可用' };
+    const data = { exists };
+    const message = exists ? '用户名已存在' : '用户名可用';
+    return ResponseDto.success(data, message);
   }
 
   /**
@@ -252,10 +290,12 @@ export class UserController {
   @Get('check/email/:email')
   @ApiOperation({ summary: '检查邮箱', description: '检查邮箱是否已存在' })
   @ApiParam({ name: 'email', description: '邮箱', example: 'test@example.com' })
-  @ApiResponse({ status: 200, description: '检查完成' })
+  @ApiResponse({ status: 200, description: '检查完成', type: ResponseDto })
   async checkEmail(@Param('email') email: string) {
     const exists = await this.userService.exists({ email });
-    return { exists, message: exists ? '邮箱已存在' : '邮箱可用' };
+    const data = { exists };
+    const message = exists ? '邮箱已存在' : '邮箱可用';
+    return ResponseDto.success(data, message);
   }
 
   /**
@@ -264,9 +304,11 @@ export class UserController {
   @Get('check/phone/:phone')
   @ApiOperation({ summary: '检查手机号', description: '检查手机号是否已存在' })
   @ApiParam({ name: 'phone', description: '手机号', example: '13800138000' })
-  @ApiResponse({ status: 200, description: '检查完成' })
+  @ApiResponse({ status: 200, description: '检查完成', type: ResponseDto })
   async checkPhone(@Param('phone') phone: string) {
     const exists = await this.userService.exists({ phone });
-    return { exists, message: exists ? '手机号已存在' : '手机号可用' };
+    const data = { exists };
+    const message = exists ? '手机号已存在' : '手机号可用';
+    return ResponseDto.success(data, message);
   }
 }
