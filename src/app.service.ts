@@ -11,7 +11,7 @@ export class AppService {
       description: '论坛服务后端 API',
       author: 'Forum Team',
       environment: process.env.NODE_ENV || 'development',
-      timestamp: new Date(),
+      timestamp: Date.now(),
     };
   }
 
@@ -22,7 +22,7 @@ export class AppService {
     return {
       status: 'ok',
       message: '服务运行正常',
-      timestamp: new Date(),
+      timestamp: Date.now(),
       uptime: process.uptime(),
       memory: {
         used:
@@ -43,7 +43,7 @@ export class AppService {
       version: '1.0.0',
       apiVersion: 'v1',
       nodeVersion: process.version,
-      buildTime: new Date(),
+      buildTime: Date.now(),
     };
   }
 }
