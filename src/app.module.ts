@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './core/database/database.module';
+import { UserModule } from './modules/user/user.module';
 import databaseConfig from './config/database.config';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -11,7 +14,9 @@ import databaseConfig from './config/database.config';
       load: [databaseConfig],
     }),
     DatabaseModule,
-    // ...其他模块
+    UserModule,
   ],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}
