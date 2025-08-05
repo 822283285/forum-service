@@ -1,7 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -12,11 +14,17 @@ async function bootstrap() {
   // 全局验证管道
   app.useGlobalPipes(
     new ValidationPipe({
-      transform: true,
       whitelist: true,
+      transform: true,
       forbidNonWhitelisted: true,
     }),
   );
+
+  // 全局响应拦截器
+  app.useGlobalInterceptors(new ResponseInterceptor());
+
+  // 全局异常过滤器
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Swagger 配置
   const config = new DocumentBuilder()
