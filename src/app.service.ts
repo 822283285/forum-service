@@ -46,4 +46,47 @@ export class AppService {
       buildTime: Date.now(),
     };
   }
+
+  /**
+   * 获取操作系统信息
+   */
+  getOsInfo() {
+    return {
+      os: process.platform,
+      arch: process.arch,
+      release: process.release,
+    };
+  }
+
+  /**
+   * 获取进程信息
+   */
+  getProcessInfo() {
+    return {
+      pid: process.pid,
+      ppid: process.ppid,
+      arch: process.arch,
+      platform: process.platform,
+      version: process.version,
+      argv: process.argv,
+      execPath: process.execPath,
+      cwd: process.cwd(),
+      memoryUsage: process.memoryUsage(),
+      uptime: process.uptime(),
+      hrtime: process.hrtime(),
+    };
+  }
+
+  /**
+   * 获取详细的应用信息
+   */
+  getAppInfoDetail() {
+    return {
+      ...this.getAppInfo(),
+      ...this.getVersion(),
+      ...this.getHealth(),
+      ...this.getOsInfo(),
+      ...this.getProcessInfo(),
+    };
+  }
 }
