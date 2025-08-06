@@ -1,25 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  ParseIntPipe,
-  HttpCode,
-  HttpStatus,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, HttpCode, HttpStatus, Req, UnauthorizedException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Request } from 'express';
 import { ResponseDto, PaginationDto } from '../../common/dto/response.dto';
 import { UserService } from './user.service';
@@ -80,10 +60,7 @@ export class UserController {
     }
 
     // 验证密码
-    const isPasswordValid = await this.userService.validatePassword(
-      loginDto.password,
-      user.password,
-    );
+    const isPasswordValid = await this.userService.validatePassword(loginDto.password, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('密码错误');
@@ -114,12 +91,7 @@ export class UserController {
   async findAll(@Query() queryUserDto: QueryUserDto) {
     const { page = 1, limit = 10, status } = queryUserDto;
     const result = await this.userService.findAll(page, limit, status);
-    const paginationData = new PaginationDto(
-      result.users,
-      result.total,
-      page,
-      limit,
-    );
+    const paginationData = new PaginationDto(result.users, result.total, page, limit);
     return ResponseDto.success(paginationData, '获取用户列表成功');
   }
 
@@ -136,12 +108,7 @@ export class UserController {
   async searchUsers(@Query() searchUserDto: SearchUserDto) {
     const { keyword, page = 1, limit = 10 } = searchUserDto;
     const result = await this.userService.searchUsers(keyword, page, limit);
-    const paginationData = new PaginationDto(
-      result.users,
-      result.total,
-      page,
-      limit,
-    );
+    const paginationData = new PaginationDto(result.users, result.total, page, limit);
     return ResponseDto.success(paginationData, '搜索用户成功');
   }
 
@@ -195,10 +162,7 @@ export class UserController {
   @ApiParam({ name: 'id', description: '用户ID', example: 1 })
   @ApiResponse({ status: 200, description: '更新成功', type: ResponseDto })
   @ApiResponse({ status: 404, description: '用户不存在' })
-  async update(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
+  async update(@Param('id', ParseIntPipe) id: number, @Body() updateUserDto: UpdateUserDto) {
     const user = await this.userService.update(id, updateUserDto);
     return ResponseDto.success(user, '用户信息更新成功');
   }
@@ -211,10 +175,7 @@ export class UserController {
   @ApiParam({ name: 'id', description: '用户ID', example: 1 })
   @ApiResponse({ status: 200, description: '状态更新成功', type: ResponseDto })
   @ApiResponse({ status: 404, description: '用户不存在' })
-  async updateStatus(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: { status: 'active' | 'inactive' | 'banned' },
-  ) {
+  async updateStatus(@Param('id', ParseIntPipe) id: number, @Body() body: { status: 'active' | 'inactive' | 'banned' }) {
     const user = await this.userService.updateStatus(id, body.status);
     return ResponseDto.success(user, '用户状态更新成功');
   }
@@ -242,10 +203,7 @@ export class UserController {
   @ApiParam({ name: 'id', description: '用户ID', example: 1 })
   @ApiResponse({ status: 200, description: '积分更新成功', type: ResponseDto })
   @ApiResponse({ status: 404, description: '用户不存在' })
-  async updatePoints(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updatePointsDto: UpdatePointsDto,
-  ) {
+  async updatePoints(@Param('id', ParseIntPipe) id: number, @Body() updatePointsDto: UpdatePointsDto) {
     const { points } = updatePointsDto;
 
     let user;

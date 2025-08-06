@@ -1,11 +1,4 @@
-import {
-  IsNotEmpty,
-  IsArray,
-  IsInt,
-  IsEnum,
-  ArrayMinSize,
-  ArrayMaxSize,
-} from 'class-validator';
+import { IsNotEmpty, IsArray, IsInt, IsEnum, ArrayMinSize, ArrayMaxSize } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateStatusDto {

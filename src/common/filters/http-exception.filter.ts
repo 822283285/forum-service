@@ -1,10 +1,4 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ResponseDto } from '../dto/response.dto';
 
@@ -67,12 +61,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const errorResponse = ResponseDto.error(status, message, errors);
 
     // 记录错误日志
-    console.error(
-      `HTTP Exception: ${status} - ${message}`,
-      `Path: ${request.url}`,
-      `Method: ${request.method}`,
-      exception.stack,
-    );
+    console.error(`HTTP Exception: ${status} - ${message}`, `Path: ${request.url}`, `Method: ${request.method}`, exception.stack);
 
     response.status(status).json(errorResponse);
   }

@@ -1,12 +1,4 @@
-import {
-  IsNotEmpty,
-  IsInt,
-  IsOptional,
-  IsString,
-  Min,
-  Max,
-  MaxLength,
-} from 'class-validator';
+import { IsNotEmpty, IsInt, IsOptional, IsString, Min, Max, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdatePointsDto {

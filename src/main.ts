@@ -5,11 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import {
-  createSwaggerConfig,
-  getSwaggerOptions,
-  getSwaggerPath,
-} from './config/swagger.config';
+import { createSwaggerConfig, getSwaggerOptions, getSwaggerPath } from './config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -23,9 +19,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: configService.get<boolean>('app.validation.whitelist') ?? true,
       transform: configService.get<boolean>('app.validation.transform') ?? true,
-      forbidNonWhitelisted:
-        configService.get<boolean>('app.validation.forbidNonWhitelisted') ??
-        true,
+      forbidNonWhitelisted: configService.get<boolean>('app.validation.forbidNonWhitelisted') ?? true,
     }),
   );
 

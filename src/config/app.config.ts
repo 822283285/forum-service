@@ -20,8 +20,7 @@ export default registerAs('app', () => ({
   validation: {
     whitelist: process.env.VALIDATION_WHITELIST === 'true' || true,
     transform: process.env.VALIDATION_TRANSFORM === 'true' || true,
-    forbidNonWhitelisted:
-      process.env.VALIDATION_FORBID_NON_WHITELISTED === 'true' || true,
+    forbidNonWhitelisted: process.env.VALIDATION_FORBID_NON_WHITELISTED === 'true' || true,
   },
 
   // 密码加密配置

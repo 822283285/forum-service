@@ -27,12 +27,8 @@ export class AppService {
       timestamp: Date.now(),
       uptime: process.uptime(),
       memory: {
-        used:
-          Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) /
-          100,
-        total:
-          Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) /
-          100,
+        used: Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) / 100,
+        total: Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) / 100,
       },
     };
   }

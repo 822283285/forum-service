@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -25,16 +21,10 @@ export class UserService {
    * @param registerIp 注册IP
    * @returns 创建的用户
    */
-  async create(
-    createUserDto: CreateUserDto,
-    registerIp?: string,
-  ): Promise<User> {
+  async create(createUserDto: CreateUserDto, registerIp?: string): Promise<User> {
     // 检查用户名是否已存在
     const existingUser = await this.userRepository.findOne({
-      where: [
-        { username: createUserDto.username },
-        { email: createUserDto.email },
-      ],
+      where: [{ username: createUserDto.username }, { email: createUserDto.email }],
     });
 
     if (existingUser) {
@@ -45,8 +35,7 @@ export class UserService {
       throw new Error('密码不能为空且必须是字符串类型');
     }
     const password: string = createUserDto.password;
-    const saltRounds =
-      this.configService.get<number>('app.security.bcryptSaltRounds') || 10;
+    const saltRounds = this.configService.get<number>('app.security.bcryptSaltRounds') || 10;
     const hashedPassword: string = await hash(password, saltRounds);
 
     const user = this.userRepository.create({
@@ -71,12 +60,8 @@ export class UserService {
    * @returns 用户列表和总数
    */
   async findAll(
-    page: number = this.configService.get<number>(
-      'app.pagination.defaultPage',
-    ) || 1,
-    limit: number = this.configService.get<number>(
-      'app.pagination.defaultLimit',
-    ) || 10,
+    page: number = this.configService.get<number>('app.pagination.defaultPage') || 1,
+    limit: number = this.configService.get<number>('app.pagination.defaultLimit') || 10,
     status?: 'active' | 'inactive' | 'banned',
   ) {
     const whereCondition = status ? { status } : {};
@@ -175,10 +160,7 @@ export class UserService {
    * @param hashedPassword 加密密码
    * @returns 是否匹配
    */
-  async validatePassword(
-    password: string,
-    hashedPassword: string,
-  ): Promise<boolean> {
+  async validatePassword(password: string, hashedPassword: string): Promise<boolean> {
     return await compare(password, hashedPassword);
   }
 
@@ -198,10 +180,7 @@ export class UserService {
    * @param id 用户ID
    * @param status 新状态
    */
-  async updateStatus(
-    id: number,
-    status: 'active' | 'inactive' | 'banned',
-  ): Promise<User> {
+  async updateStatus(id: number, status: 'active' | 'inactive' | 'banned'): Promise<User> {
     const user = await this.findOne(id);
     user.status = status;
     await this.userRepository.save(user);
@@ -257,11 +236,7 @@ export class UserService {
    * @param limit 数量限制
    * @returns 活跃用户列表
    */
-  async getActiveUsers(
-    limit: number = this.configService.get<number>(
-      'app.user.activeUserLimit',
-    ) || 10,
-  ): Promise<User[]> {
+  async getActiveUsers(limit: number = this.configService.get<number>('app.user.activeUserLimit') || 10): Promise<User[]> {
     return await this.userRepository.find({
       where: { status: 'active' },
       order: { lastLoginAt: 'DESC' },
@@ -302,12 +277,8 @@ export class UserService {
    */
   async searchUsers(
     keyword: string,
-    page: number = this.configService.get<number>(
-      'app.pagination.defaultPage',
-    ) || 1,
-    limit: number = this.configService.get<number>(
-      'app.pagination.defaultLimit',
-    ) || 10,
+    page: number = this.configService.get<number>('app.pagination.defaultPage') || 1,
+    limit: number = this.configService.get<number>('app.pagination.defaultLimit') || 10,
   ) {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
 
@@ -335,10 +306,7 @@ export class UserService {
    * @param ids 用户ID数组
    * @param status 新状态
    */
-  async batchUpdateStatus(
-    ids: number[],
-    status: 'active' | 'inactive' | 'banned',
-  ): Promise<void> {
+  async batchUpdateStatus(ids: number[], status: 'active' | 'inactive' | 'banned'): Promise<void> {
     await this.userRepository.update(ids, { status });
   }
 
