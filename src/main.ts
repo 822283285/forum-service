@@ -1,10 +1,15 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
 import { ResponseInterceptor } from './common/interceptors/response.interceptor';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import {
+  createSwaggerConfig,
+  getSwaggerOptions,
+  getSwaggerPath,
+} from './config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -31,40 +36,14 @@ async function bootstrap() {
   app.useGlobalFilters(new HttpExceptionFilter());
 
   // Swagger 配置
-  const config = new DocumentBuilder()
-    .setTitle(configService.get<string>('app.swagger.title') || '论坛服务 API')
-    .setDescription(
-      configService.get<string>('app.swagger.description') ||
-        '论坛服务后端 API 文档',
-    )
-    .setVersion(configService.get<string>('app.swagger.version') || '1.0')
-    .addTag(
-      configService.get<string>('app.swagger.tags.app') || '应用信息',
-      '应用基本信息和状态',
-    )
-    .addTag(
-      configService.get<string>('app.swagger.tags.user') || '用户管理',
-      '用户相关操作',
-    )
-    .build();
-
+  const config = createSwaggerConfig(configService);
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(
-    configService.get<string>('app.swagger.path') || 'swagger',
-    app,
-    document,
-    {
-      swaggerOptions: {
-        persistAuthorization:
-          configService.get<boolean>('app.swagger.persistAuthorization') ??
-          true,
-      },
-    },
-  );
+  const swaggerPath = getSwaggerPath(configService);
+  const swaggerOptions = getSwaggerOptions(configService);
+
+  SwaggerModule.setup(swaggerPath, app, document, swaggerOptions);
 
   const port = configService.get<number>('app.port') || 3000;
-  const swaggerPath =
-    configService.get<string>('app.swagger.path') || 'swagger';
 
   await app.listen(port);
   console.log(`应用已启动，访问地址: http://localhost:${port}`);
