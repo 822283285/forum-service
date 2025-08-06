@@ -1,16 +1,18 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppService {
+  constructor(private readonly configService: ConfigService) {}
   /**
    * 获取应用基本信息
    */
   getAppInfo() {
     return {
-      name: 'Forum Service',
-      description: '论坛服务后端 API',
-      author: 'Forum Team',
-      environment: process.env.NODE_ENV || 'development',
+      name: this.configService.get<string>('app.name'),
+      description: this.configService.get<string>('app.description'),
+      author: this.configService.get<string>('app.author'),
+      environment: this.configService.get<string>('app.env'),
       timestamp: Date.now(),
     };
   }
@@ -40,7 +42,7 @@ export class AppService {
    */
   getVersion() {
     return {
-      version: '1.0.0',
+      version: this.configService.get<string>('app.version'),
       apiVersion: 'v1',
       nodeVersion: process.version,
       buildTime: Date.now(),

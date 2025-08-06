@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, FindOptionsWhere } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,6 +16,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -43,7 +45,9 @@ export class UserService {
       throw new Error('密码不能为空且必须是字符串类型');
     }
     const password: string = createUserDto.password;
-    const hashedPassword: string = await hash(password, 10);
+    const saltRounds =
+      this.configService.get<number>('app.security.bcryptSaltRounds') || 10;
+    const hashedPassword: string = await hash(password, saltRounds);
 
     const user = this.userRepository.create({
       ...createUserDto,
@@ -67,8 +71,12 @@ export class UserService {
    * @returns 用户列表和总数
    */
   async findAll(
-    page: number = 1,
-    limit: number = 10,
+    page: number = this.configService.get<number>(
+      'app.pagination.defaultPage',
+    ) || 1,
+    limit: number = this.configService.get<number>(
+      'app.pagination.defaultLimit',
+    ) || 10,
     status?: 'active' | 'inactive' | 'banned',
   ) {
     const whereCondition = status ? { status } : {};
@@ -249,7 +257,11 @@ export class UserService {
    * @param limit 数量限制
    * @returns 活跃用户列表
    */
-  async getActiveUsers(limit: number = 10): Promise<User[]> {
+  async getActiveUsers(
+    limit: number = this.configService.get<number>(
+      'app.user.activeUserLimit',
+    ) || 10,
+  ): Promise<User[]> {
     return await this.userRepository.find({
       where: { status: 'active' },
       order: { lastLoginAt: 'DESC' },
@@ -288,7 +300,15 @@ export class UserService {
    * @param limit 每页数量
    * @returns 搜索结果
    */
-  async searchUsers(keyword: string, page: number = 1, limit: number = 10) {
+  async searchUsers(
+    keyword: string,
+    page: number = this.configService.get<number>(
+      'app.pagination.defaultPage',
+    ) || 1,
+    limit: number = this.configService.get<number>(
+      'app.pagination.defaultLimit',
+    ) || 10,
+  ) {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
 
     queryBuilder
