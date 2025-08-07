@@ -1,5 +1,6 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Index } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, Index, ManyToMany, JoinTable } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
+import { Role } from '../../role/entities/role.entity';
 
 @Index(['status', 'createdAt'])
 @Index(['lastLoginAt'])
@@ -82,6 +83,15 @@ export class User {
   @DeleteDateColumn({ select: false, type: 'timestamp', comment: '删除时间(软删除)' })
   deletedAt: Date;
 
+  @ApiProperty({ description: '用户角色', type: () => [Role], required: false })
+  @ManyToMany(() => Role, (role) => role.users, { cascade: true })
+  @JoinTable({
+    name: 'user_roles',
+    joinColumn: { name: 'user_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'role_id', referencedColumnName: 'id' },
+  })
+  roles: Role[];
+
   /**
    * 获取用户显示名称
    * @returns {string} 显示名称
@@ -122,5 +132,87 @@ export class User {
       age--;
     }
     return age;
+  }
+
+  /**
+   * 检查用户是否拥有指定角色
+   * @param {string} roleCode 角色代码
+   * @returns {boolean} 是否拥有角色
+   */
+  hasRole(roleCode: string): boolean {
+    if (!this.roles || this.roles.length === 0) {
+      return false;
+    }
+    return this.roles.some((role) => role.code === roleCode && role.isActive());
+  }
+
+  /**
+   * 检查用户是否拥有指定权限
+   * @param {string} permissionCode 权限代码
+   * @returns {boolean} 是否拥有权限
+   */
+  hasPermission(permissionCode: string): boolean {
+    if (!this.roles || this.roles.length === 0) {
+      return false;
+    }
+    return this.roles.some((role) => role.isActive() && role.hasPermission(permissionCode));
+  }
+
+  /**
+   * 检查用户是否拥有指定模块的权限
+   * @param {string} module 模块名
+   * @param {string} action 操作类型
+   * @returns {boolean} 是否拥有权限
+   */
+  hasModulePermission(module: string, action: string): boolean {
+    if (!this.roles || this.roles.length === 0) {
+      return false;
+    }
+    return this.roles.some((role) => role.isActive() && role.hasModulePermission(module, action));
+  }
+
+  /**
+   * 获取用户所有权限代码
+   * @returns {string[]} 权限代码列表
+   */
+  getAllPermissions(): string[] {
+    if (!this.roles || this.roles.length === 0) {
+      return [];
+    }
+    const permissions = new Set<string>();
+    this.roles.forEach((role) => {
+      if (role.isActive()) {
+        const rolePerm = role.getPermissionCodes();
+        rolePerm.forEach((permission) => permissions.add(permission));
+      }
+    });
+    return Array.from(permissions);
+  }
+
+  /**
+   * 获取用户指定模块的权限
+   * @param {string} module 模块名
+   * @returns {string[]} 权限代码列表
+   */
+  getModulePermissions(module: string): string[] {
+    if (!this.roles || this.roles.length === 0) {
+      return [];
+    }
+    const permissions = new Set<string>();
+    this.roles.forEach((role) => {
+      if (role.isActive()) {
+        const modulePerms = role.getModulePermissions(module);
+        modulePerms.forEach((permission) => permissions.add(permission.code));
+      }
+    });
+    return Array.from(permissions);
+  }
+
+  /**
+   * 检查用户是否为管理员
+   * @returns {boolean} 是否为管理员
+   */
+  isAdmin(): boolean {
+    return this.hasRole('admin') || this.hasRole('super_admin');
   }
 }
