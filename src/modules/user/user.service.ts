@@ -103,6 +103,26 @@ export class UserService {
   async findByUsername(username: string): Promise<User | null> {
     return await this.userRepository.findOne({
       where: { username },
+      select: [
+        'id',
+        'username',
+        'nickname',
+        'password',
+        'phone',
+        'email',
+        'sex',
+        'birth',
+        'signature',
+        'avatar',
+        'status',
+        'level',
+        'points',
+        'lastLoginAt',
+        'lastLoginIp',
+        'registerIp',
+        'createdAt',
+        'updatedAt',
+      ],
     });
   }
 
@@ -112,7 +132,29 @@ export class UserService {
    * @returns 用户信息
    */
   async findByEmail(email: string): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { email } });
+    return await this.userRepository.findOne({
+      where: { email },
+      select: [
+        'id',
+        'username',
+        'nickname',
+        'password',
+        'phone',
+        'email',
+        'sex',
+        'birth',
+        'signature',
+        'avatar',
+        'status',
+        'level',
+        'points',
+        'lastLoginAt',
+        'lastLoginIp',
+        'registerIp',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
   }
 
   /**
@@ -121,7 +163,29 @@ export class UserService {
    * @returns 用户信息
    */
   async findByPhone(phone: string): Promise<User | null> {
-    return await this.userRepository.findOne({ where: { phone } });
+    return await this.userRepository.findOne({
+      where: { phone },
+      select: [
+        'id',
+        'username',
+        'nickname',
+        'password',
+        'phone',
+        'email',
+        'sex',
+        'birth',
+        'signature',
+        'avatar',
+        'status',
+        'level',
+        'points',
+        'lastLoginAt',
+        'lastLoginIp',
+        'registerIp',
+        'createdAt',
+        'updatedAt',
+      ],
+    });
   }
 
   /**

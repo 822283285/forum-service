@@ -1,11 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, HttpCode, HttpStatus, Req, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, ParseIntPipe, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { Request } from 'express';
 import { ResponseDto, PaginationDto } from '../../common/dto/response.dto';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { LoginDto } from './dto/login.dto';
 import { QueryUserDto } from './dto/query-user.dto';
 import { SearchUserDto } from './dto/search-user.dto';
 import { UpdatePointsDto } from './dto/update-points.dto';
@@ -18,10 +17,10 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   /**
-   * 创建用户（注册）
+   * 创建用户（管理员创建）
    */
   @Post()
-  @ApiOperation({ summary: '创建用户', description: '用户注册接口' })
+  @ApiOperation({ summary: '创建用户', description: '管理员创建用户接口' })
   @ApiResponse({
     status: 201,
     description: '用户创建成功',
@@ -32,47 +31,6 @@ export class UserController {
     const registerIp = req.ip || req.socket.remoteAddress;
     const user = await this.userService.create(createUserDto, registerIp);
     return ResponseDto.success(user, '用户创建成功');
-  }
-
-  /**
-   * 用户登录验证
-   */
-  @Post('login')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '用户登录', description: '用户登录验证接口' })
-  @ApiResponse({ status: 200, description: '登录成功', type: ResponseDto })
-  @ApiResponse({ status: 401, description: '用户名或密码错误' })
-  async login(@Body() loginDto: LoginDto, @Req() req: Request) {
-    // 根据用户名类型查找用户
-    let user: User | null = null;
-
-    // 判断是邮箱、手机号还是用户名
-    if (loginDto.username.includes('@')) {
-      user = await this.userService.findByEmail(loginDto.username);
-    } else if (/^1[3-9]\d{9}$/.test(loginDto.username)) {
-      user = await this.userService.findByPhone(loginDto.username);
-    } else {
-      user = await this.userService.findByUsername(loginDto.username);
-    }
-
-    if (!user) {
-      throw new UnauthorizedException('用户不存在');
-    }
-
-    // 验证密码
-    const isPasswordValid = await this.userService.validatePassword(loginDto.password, user.password);
-
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('密码错误');
-    }
-
-    // 更新最后登录信息
-    const loginIp = req.ip || req.socket.remoteAddress;
-    await this.userService.updateLastLogin(user.id, loginIp);
-
-    // 重新查询用户以确保敏感字段被过滤
-    const userInfo = await this.userService.findOne(user.id);
-    return ResponseDto.success(userInfo, '登录成功');
   }
 
   /**
