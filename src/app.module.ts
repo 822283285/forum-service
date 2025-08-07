@@ -56,6 +56,6 @@ import { AppService } from './app.service';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     // 应用权限中间件到所有路由
-    consumer.apply(PermissionMiddleware).forRoutes('*');
+    consumer.apply(PermissionMiddleware).forRoutes('*path');
   }
 }
