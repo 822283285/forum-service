@@ -3,12 +3,7 @@ import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/
 import { Request } from 'express';
 import { ResponseDto, PaginationDto } from '../../common/dto/response.dto';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { QueryUserDto } from './dto/query-user.dto';
-import { SearchUserDto } from './dto/search-user.dto';
-import { UpdatePointsDto } from './dto/update-points.dto';
-import { UpdateStatusDto } from './dto/update-status.dto';
+import { CreateUserDto, UpdateUserDto, QueryUserDto, SearchUserDto, UpdatePointsDto, UpdateStatusDto } from './dto/index';
 import { User } from './entities/user.entity';
 
 @ApiTags('用户管理')
