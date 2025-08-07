@@ -80,11 +80,11 @@ export class AppService {
    */
   getAppInfoDetail() {
     return {
-      ...this.getAppInfo(),
       ...this.getVersion(),
       ...this.getHealth(),
       ...this.getOsInfo(),
       ...this.getProcessInfo(),
+      ...this.getAppInfo(),
     };
   }
 }
