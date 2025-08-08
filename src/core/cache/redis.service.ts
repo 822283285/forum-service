@@ -44,9 +44,9 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async onModuleDestroy() {
+  onModuleDestroy() {
     if (this.client) {
-      await this.client.disconnect();
+      this.client.disconnect();
       this.logger.log('Redis 连接已断开');
     }
   }

@@ -8,7 +8,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { RoleModule } from './modules/role/role.module';
 import { PermissionModule as PermissionEntityModule } from './modules/permission/permission.module';
 import { PermissionModule as GlobalPermissionModule } from './common/permission.module';
-import { PermissionGuard } from './common/guards/permission.guard';
+import { DynamicPermissionGuard } from './common/guards/dynamic-permission.guard';
 import { PermissionInterceptor } from './common/interceptors/permission.interceptor';
 import { PermissionMiddleware } from './common/middleware/permission.middleware';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -44,7 +44,7 @@ import { AppService } from './app.service';
     // 全局权限守卫
     {
       provide: APP_GUARD,
-      useClass: PermissionGuard,
+      useClass: DynamicPermissionGuard,
     },
     // 全局权限拦截器
     {
