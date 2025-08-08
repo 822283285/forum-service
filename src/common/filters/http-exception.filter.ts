@@ -31,6 +31,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     }
 
+    if (message == 'Unauthorized') {
+      message = '未授权访问';
+    }
+
     // 根据状态码设置默认消息
     if (!message) {
       switch (status as HttpStatus) {
