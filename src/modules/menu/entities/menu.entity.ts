@@ -87,7 +87,7 @@ export class Menu {
   updatedAt: Date;
 
   @ApiProperty({ description: '删除时间（软删除）', example: '2024-01-01T12:00:00Z', required: false })
-  @DeleteDateColumn({ type: 'timestamp', nullable: true, comment: '删除时间' })
+  @DeleteDateColumn({ select: false, type: 'timestamp', nullable: true, comment: '删除时间' })
   deletedAt: Date;
 
   @ApiProperty({ description: '关联权限', type: () => [Permission] })

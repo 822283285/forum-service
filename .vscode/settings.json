@@ -1,8 +1,10 @@
 {
     "editor.tabSize": 2,
     "cSpell.words": [
+        "metatype",
         "setex",
         "smhd",
-        "testuser"
+        "testuser",
+        "varchar"
     ]
 }

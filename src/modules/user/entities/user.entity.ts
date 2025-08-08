@@ -94,7 +94,7 @@ export class User {
 
   /**
    * 获取用户显示名称
-   * @returns {string} 显示名称
+   * @returns {string} 用户显示名称，优先返回昵称，如果昵称为空则返回用户名
    */
   getDisplayName(): string {
     return this.nickname || this.username;
@@ -102,7 +102,7 @@ export class User {
 
   /**
    * 检查用户是否活跃
-   * @returns {boolean} 是否活跃
+   * @returns {boolean} 用户状态是否为激活状态
    */
   isActive(): boolean {
     return this.status === 'active';
@@ -110,7 +110,8 @@ export class User {
 
   /**
    * 更新最后登录信息
-   * @param {string} ip 登录IP
+   * @param {string} [ip] 登录IP地址，可选参数
+   * @returns {void}
    */
   updateLastLogin(ip?: string): void {
     this.lastLoginAt = new Date();
@@ -120,8 +121,8 @@ export class User {
   }
 
   /**
-   * 计算用户年龄
-   * @returns {number} 年龄
+   * 获取年龄
+   * @returns {number} 根据生日计算的用户年龄
    */
   getAge(): number {
     const today = new Date();
@@ -137,7 +138,7 @@ export class User {
   /**
    * 检查用户是否拥有指定角色
    * @param {string} roleCode 角色代码
-   * @returns {boolean} 是否拥有角色
+   * @returns {boolean} 用户是否拥有指定的激活状态角色
    */
   hasRole(roleCode: string): boolean {
     if (!this.roles || this.roles.length === 0) {
@@ -149,7 +150,7 @@ export class User {
   /**
    * 检查用户是否拥有指定权限
    * @param {string} permissionCode 权限代码
-   * @returns {boolean} 是否拥有权限
+   * @returns {boolean} 用户是否拥有指定权限
    */
   hasPermission(permissionCode: string): boolean {
     if (!this.roles || this.roles.length === 0) {
@@ -160,9 +161,9 @@ export class User {
 
   /**
    * 检查用户是否拥有指定模块的权限
-   * @param {string} module 模块名
-   * @param {string} action 操作类型
-   * @returns {boolean} 是否拥有权限
+   * @param {string} module 模块名称
+   * @param {string} action 操作名称
+   * @returns {boolean} 用户是否拥有指定模块的操作权限
    */
   hasModulePermission(module: string, action: string): boolean {
     if (!this.roles || this.roles.length === 0) {
@@ -172,8 +173,8 @@ export class User {
   }
 
   /**
-   * 获取用户所有权限代码
-   * @returns {string[]} 权限代码列表
+   * 获取用户所有权限
+   * @returns {string[]} 用户拥有的所有权限代码列表
    */
   getAllPermissions(): string[] {
     if (!this.roles || this.roles.length === 0) {

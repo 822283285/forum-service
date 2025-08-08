@@ -26,9 +26,23 @@ export default registerAs('app', () => ({
   // 密码加密配置
   security: {
     bcryptSaltRounds: parseInt(process.env.BCRYPT_SALT_ROUNDS || '10', 10),
-    jwtSecret: process.env.JWT_SECRET || 'your-secret-key',
+    jwtSecret:
+      process.env.JWT_SECRET ||
+      (() => {
+        if (process.env.NODE_ENV === 'production') {
+          throw new Error('JWT_SECRET must be set in production environment');
+        }
+        return 'dev-jwt-secret-key-please-change-in-production';
+      })(),
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-    jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || 'your-refresh-secret-key',
+    jwtRefreshSecret:
+      process.env.JWT_REFRESH_SECRET ||
+      (() => {
+        if (process.env.NODE_ENV === 'production') {
+          throw new Error('JWT_REFRESH_SECRET must be set in production environment');
+        }
+        return 'dev-jwt-refresh-secret-key-please-change-in-production';
+      })(),
     jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   },
 

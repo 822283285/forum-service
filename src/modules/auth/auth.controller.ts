@@ -2,6 +2,7 @@ import { Controller, Post, Body, HttpCode, HttpStatus, Req, UseGuards, Get } fro
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { ResponseDto } from '../../common/dto/response.dto';
+import { DynamicPermission } from '../../common/decorators/dynamic-permission.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -20,13 +21,45 @@ export class AuthController {
    */
   @Public()
   @Post('register')
-  @ApiOperation({ summary: '用户注册', description: '用户注册接口' })
+  @ApiOperation({
+    summary: '用户注册',
+    description: '用户注册接口，无需权限验证',
+  })
   @ApiResponse({
     status: 201,
     description: '注册成功',
     type: ResponseDto<TokenResponseDto>,
+    example: {
+      code: 200,
+      message: '注册成功',
+      data: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: 1,
+          username: 'john_doe',
+          email: 'john@example.com',
+          status: 'active',
+        },
+      },
+    },
   })
-  @ApiResponse({ status: 409, description: '用户名、邮箱或手机号已存在' })
+  @ApiResponse({
+    status: 400,
+    description: '请求参数验证失败',
+    example: {
+      code: 400,
+      message: '参数验证失败: 密码必须包含至少一个大写字母、一个小写字母和一个数字',
+    },
+  })
+  @ApiResponse({
+    status: 409,
+    description: '用户名、邮箱或手机号已存在',
+    example: {
+      code: 409,
+      message: '用户名已存在，请选择其他用户名',
+    },
+  })
   async register(@Body() registerDto: RegisterDto, @Req() req: Request) {
     const registerIp = req.ip || req.socket.remoteAddress;
     const result = await this.authService.register(registerDto, registerIp);
@@ -39,13 +72,53 @@ export class AuthController {
   @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: '用户登录', description: '用户登录验证接口' })
+  @ApiOperation({
+    summary: '用户登录',
+    description: '用户登录验证接口，支持用户名/邮箱登录',
+  })
   @ApiResponse({
     status: 200,
     description: '登录成功',
     type: ResponseDto<TokenResponseDto>,
+    example: {
+      code: 200,
+      message: '登录成功',
+      data: {
+        accessToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        user: {
+          id: 1,
+          username: 'john_doe',
+          email: 'john@example.com',
+          status: 'active',
+        },
+      },
+    },
   })
-  @ApiResponse({ status: 401, description: '用户名或密码错误' })
+  @ApiResponse({
+    status: 400,
+    description: '请求参数验证失败',
+    example: {
+      code: 400,
+      message: '参数验证失败: 用户名不能为空',
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: '用户名或密码错误',
+    example: {
+      code: 401,
+      message: '用户名或密码错误',
+    },
+  })
+  @ApiResponse({
+    status: 423,
+    description: '账户已被锁定',
+    example: {
+      code: 423,
+      message: '账户已被禁用，请联系管理员',
+    },
+  })
   async login(@Body() loginDto: LoginDto, @Req() req: Request) {
     const loginIp = req.ip || req.socket.remoteAddress;
     const result = await this.authService.login(loginDto, loginIp);
@@ -74,6 +147,7 @@ export class AuthController {
    * 获取当前用户信息
    */
   @UseGuards(JwtAuthGuard)
+  @DynamicPermission({ code: 'user:read:self' })
   @Get('profile')
   @ApiBearerAuth()
   @ApiOperation({ summary: '获取当前用户信息', description: '获取当前登录用户的详细信息' })

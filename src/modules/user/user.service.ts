@@ -22,12 +22,21 @@ export class UserService {
    */
   async create(createUserDto: CreateUserDto, registerIp?: string): Promise<User> {
     // 检查用户名是否已存在
-    const existingUser = await this.userRepository.findOne({
-      where: [{ username: createUserDto.username }, { email: createUserDto.email }],
+    const existingUserByUsername = await this.userRepository.findOne({
+      where: { username: createUserDto.username },
     });
 
-    if (existingUser) {
-      throw new ConflictException('用户名或邮箱已存在');
+    if (existingUserByUsername) {
+      throw new ConflictException('用户名已存在，请选择其他用户名');
+    }
+
+    // 检查邮箱是否已存在
+    const existingUserByEmail = await this.userRepository.findOne({
+      where: { email: createUserDto.email },
+    });
+
+    if (existingUserByEmail) {
+      throw new ConflictException('邮箱已被注册，请使用其他邮箱地址');
     }
 
     if (!createUserDto.password || typeof createUserDto.password !== 'string') {
