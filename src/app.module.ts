@@ -7,6 +7,7 @@ import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { RoleModule } from './modules/role/role.module';
 import { PermissionModule as PermissionEntityModule } from './modules/permission/permission.module';
+import { MenuModule } from './modules/menu/menu.module';
 import { PermissionModule as GlobalPermissionModule } from './common/permission.module';
 import { DynamicPermissionGuard } from './common/guards/dynamic-permission.guard';
 import { PermissionInterceptor } from './common/interceptors/permission.interceptor';
@@ -32,6 +33,7 @@ import { AppService } from './app.service';
     AuthModule,
     RoleModule,
     PermissionEntityModule, // 权限实体模块
+    MenuModule, // 菜单模块
   ],
   controllers: [AppController],
   providers: [
