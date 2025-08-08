@@ -18,7 +18,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return true;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    return super.canActivate(context) as boolean | Promise<boolean> | Observable<boolean>;
+    return super.canActivate(context);
   }
 }

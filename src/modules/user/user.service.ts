@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto } from './dto/index';
 import { compare, hash } from 'bcrypt';
+import { RoleService } from '../role/role.service';
 
 @Injectable()
 export class UserService {
@@ -12,6 +13,7 @@ export class UserService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly configService: ConfigService,
+    private readonly roleService: RoleService,
   ) {}
 
   /**
@@ -54,6 +56,18 @@ export class UserService {
 
     const savedUser = await this.userRepository.save(user);
 
+    // 为新用户分配默认角色（普通用户）
+    try {
+      const defaultRole = await this.roleService.findByCode('user');
+      if (defaultRole) {
+        await this.roleService.assignToUser(savedUser.id, [defaultRole.id]);
+      }
+    } catch (error) {
+      // 如果默认角色不存在或分配失败，记录错误但不影响用户创建
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      console.warn('为新用户分配默认角色失败:', error.message);
+    }
+
     // 重新查询用户以确保敏感字段被过滤
     return (await this.userRepository.findOne({
       where: { id: savedUser.id },
@@ -91,12 +105,30 @@ export class UserService {
   }
 
   /**
-   * 根据ID查找用户
+   * 根据ID查找用户（包含完整权限信息，用于认证）
    * @param id 用户ID
-   * @returns 用户信息
+   * @returns 用户信息（包含角色和权限）
    */
   async findOne(id: number): Promise<User> {
-    const user = await this.userRepository.findOne({ where: { id } });
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['roles', 'roles.permissions'],
+    });
+    if (!user) {
+      throw new NotFoundException('用户不存在');
+    }
+    return user;
+  }
+
+  /**
+   * 根据ID查找用户基本信息（不包含权限数据，用于个人信息展示）
+   * @param id 用户ID
+   * @returns 用户基本信息
+   */
+  async findProfile(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
     if (!user) {
       throw new NotFoundException('用户不存在');
     }

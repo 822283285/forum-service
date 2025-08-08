@@ -3,7 +3,16 @@
   "version": "0.0.1",
   "description": "基于 NestJS 的论坛服务后端 API，提供用户管理、角色权限、动态权限控制等功能",
   "author": "Forum Team",
-  "keywords": ["nestjs", "forum", "api", "typescript", "mysql", "redis", "jwt", "rbac"],
+  "keywords": [
+    "nestjs",
+    "forum",
+    "api",
+    "typescript",
+    "mysql",
+    "redis",
+    "jwt",
+    "rbac"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/your-org/forum-service.git"
@@ -40,6 +49,7 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
+    "dotenv": "^17.2.1",
     "ioredis": "^5.7.0",
     "mysql2": "^3.14.3",
     "passport": "^0.7.0",

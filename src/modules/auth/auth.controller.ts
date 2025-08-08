@@ -4,6 +4,7 @@ import { Request } from 'express';
 import { ResponseDto } from '../../common/dto/response.dto';
 import { DynamicPermission } from '../../common/decorators/dynamic-permission.decorator';
 import { AuthService } from './auth.service';
+import { UserService } from '../user/user.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto, TokenResponseDto } from './dto/auth-response.dto';
@@ -14,7 +15,10 @@ import { User } from '../user/entities/user.entity';
 @ApiTags('认证管理')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userService: UserService,
+  ) {}
 
   /**
    * 用户注册
@@ -157,8 +161,9 @@ export class AuthController {
     type: ResponseDto<User>,
   })
   @ApiResponse({ status: 401, description: '未授权' })
-  getProfile(@Req() req: Request & { user: User }) {
-    return ResponseDto.success(req.user, '获取用户信息成功');
+  async getProfile(@Req() req: Request & { user: User }) {
+    const userProfile = await this.userService.findProfile(req.user.id);
+    return ResponseDto.success(userProfile, '获取用户信息成功');
   }
 
   /**

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
@@ -131,10 +132,9 @@ export class AuthService {
         throw new UnauthorizedException('刷新令牌已失效');
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       const payload = this.jwtService.verify(refreshToken, {
         secret: this.configService.get<string>('app.security.jwtRefreshSecret') || 'your-refresh-secret',
-      }) as JwtPayload;
+      });
 
       const user = await this.userService.findOne(payload.sub);
       if (!user || user.status !== 'active') {
@@ -176,7 +176,7 @@ export class AuthService {
   async logout(userId: number, accessToken: string, refreshToken?: string): Promise<void> {
     try {
       // 获取访问token的剩余过期时间
-      const payload = this.jwtService.decode(accessToken) as any;
+      const payload = this.jwtService.decode(accessToken);
       const currentTime = Math.floor(Date.now() / 1000);
       const accessTokenExpiresIn = payload?.exp ? payload.exp - currentTime : 0;
 
@@ -242,20 +242,18 @@ export class AuthService {
     const accessTokenExpiry = this.configService.get<string>('app.security.jwtExpiresIn') || '1h';
     const refreshTokenExpiry = this.configService.get<string>('app.security.jwtRefreshExpiresIn') || '7d';
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const tokens = await Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('app.security.jwtSecret') || 'your-secret-key',
         expiresIn: accessTokenExpiry,
       }),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('app.security.jwtRefreshSecret') || 'your-refresh-secret',
         expiresIn: refreshTokenExpiry,
       }),
     ]);
-    const [accessToken, refreshToken] = tokens as [string, string];
+    const [accessToken, refreshToken] = tokens;
 
     return {
       accessToken,
